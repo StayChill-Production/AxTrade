@@ -52,7 +52,10 @@ currency-editor:
 request:
   sent-sender: "&#CCFFEEYou have successfully sent a trade request to &#00FFDD%player%&#CCFFEE!"
   sent-receiver:
+    header: "&#f9a2eeɴᴇᴡ ᴛʀᴀᴅᴇ ʀᴇǫᴜᴇsᴛ:"
     info: "&#CCFFEEYou have received a trade request from &#00FFDD%player%&#CCFFEE!"
+    click-here: "&7Click here to "
+    separator: "&7 or "
     accept:
       message: "&#00FF00/trade accept %player%"
       hover: "&#00FF00Click here to &naccept&#00FF00 trade request!"

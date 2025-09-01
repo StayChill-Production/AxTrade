@@ -6,6 +6,7 @@ import com.artillexstudios.axtrade.api.events.AxTradeRequestEvent;
 import com.artillexstudios.axtrade.safety.SafetyManager;
 import com.artillexstudios.axtrade.trade.Trades;
 import com.artillexstudios.axtrade.utils.SoundUtils;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import org.bukkit.Bukkit;
@@ -104,18 +105,45 @@ public class Requests {
         MESSAGEUTILS.sendLang(sender, "request.sent-sender", replacements);
 
         Map<String, String> replacements2 = Map.of("%player%", sender.getName());
-        if (LANG.getSection("request.sent-receiver") == null) // this is for backwards compatibility
+        if (LANG.getSection("request.sent-receiver") == null) {
+            // backward compatibility
             MESSAGEUTILS.sendLang(receiver, "request.sent-receiver", replacements2);
-        else {
+        } else {
             ServerPlayerWrapper receiverWrap = ServerPlayerWrapper.wrap(receiver);
-            receiverWrap.message(StringUtils.format(CONFIG.getString("prefix") + LANG.getString("request.sent-receiver.info"), replacements2));
-            receiverWrap.message(StringUtils.format(LANG.getString("request.sent-receiver.accept.message"), replacements2)
-                    .hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT, StringUtils.format(LANG.getString("request.sent-receiver.accept.hover"), replacements2)))
-                    .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, "/trade accept " + sender.getName())));
-            receiverWrap.message(StringUtils.format(LANG.getString("request.sent-receiver.deny.message"), replacements2)
-                    .hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT, StringUtils.format(LANG.getString("request.sent-receiver.deny.hover"), replacements2)))
-                    .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, "/trade deny " + sender.getName())));
+
+            // Header
+            var header = StringUtils.format(LANG.getString("request.sent-receiver.header"), replacements2);
+
+            // Info1
+            var info = StringUtils.format(LANG.getString("request.sent-receiver.info"), replacements2);
+
+            // Click here
+            var base = StringUtils.format(LANG.getString("request.sent-receiver.click-here"), replacements2);
+
+            // ACCETTA
+            var accept = StringUtils.format(LANG.getString("request.sent-receiver.accept.message"), replacements2)
+                    .hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT,
+                            StringUtils.format(LANG.getString("request.sent-receiver.accept.hover"), replacements2)))
+                    .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, "/trade accept " + sender.getName()));
+
+            // Separator
+            var separator = StringUtils.format(LANG.getString("request.sent-receiver.separator"), replacements2);
+
+            // RIFIUTA
+            var deny = StringUtils.format(LANG.getString("request.sent-receiver.deny.message"), replacements2)
+                    .hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT,
+                            StringUtils.format(LANG.getString("request.sent-receiver.deny.hover"), replacements2)))
+                    .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, "/trade deny " + sender.getName()));
+
+            // Messaggio finale
+            receiverWrap.message(Component.text(" "));
+            receiverWrap.message(header);
+            receiverWrap.message(Component.text(" "));
+            receiverWrap.message(info);
+            receiverWrap.message(base.append(accept).append(separator).append(deny));
+            receiverWrap.message(Component.text(" "));
         }
+
         SoundUtils.playSound(sender, "requested");
         SoundUtils.playSound(receiver, "requested");
     }
