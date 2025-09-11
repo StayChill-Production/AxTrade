@@ -173,7 +173,6 @@ public class Trade {
                 List<String> player1Items = new ArrayList<>();
                 player1.getTradeGui().getItems(false).forEach(itemStack -> {
                     if (itemStack == null) return;
-                    checkItem(player1.getPlayer(), itemStack);
                     Scheduler.get().runAt(player2.getPlayer().getLocation(), task -> {
                         ContainerUtils.INSTANCE.addOrDrop(player2.getPlayer().getInventory(), List.of(itemStack), player2.getPlayer().getLocation());
                     });
@@ -189,7 +188,6 @@ public class Trade {
                 List<String> player2Items = new ArrayList<>();
                 player2.getTradeGui().getItems(false).forEach(itemStack -> {
                     if (itemStack == null) return;
-                    checkItem(player2.getPlayer(), itemStack);
                     Scheduler.get().runAt(player1.getPlayer().getLocation(), task -> {
                         ContainerUtils.INSTANCE.addOrDrop(player1.getPlayer().getInventory(), List.of(itemStack), player1.getPlayer().getLocation());
                     });
@@ -207,7 +205,16 @@ public class Trade {
                                 player1.getPlayer().getName(), player1Currencies.isEmpty() ? "---" : String.join(", ", player1Currencies), player1Items.isEmpty() ? "---" : String.join(", ", player1Items), player2.getPlayer().getName(), player2Currencies.isEmpty() ? "---" : String.join(", ", player2Currencies), player2Items.isEmpty() ? "---" : String.join(", ", player2Items)));
             });
         });
-    });
+
+        for (ItemStack item : player1.getPlayer().getInventory()){
+            checkItem(player1.getPlayer(), item);
+        }
+
+        for (ItemStack item : player2.getPlayer().getInventory()){
+            checkItem(player2.getPlayer(), item);
+        }
+
+    };
 
     public static NamespacedKey setKey = new NamespacedKey("itemskinskymine", "set_id");
     public static NamespacedKey tierKey = new NamespacedKey("itemskinskymine", "set_tier");
