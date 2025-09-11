@@ -12,7 +12,15 @@ import com.artillexstudios.axtrade.utils.SoundUtils;
 import com.artillexstudios.axtrade.utils.TaxUtils;
 import com.artillexstudios.axtrade.utils.Utils;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ArmorMeta;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -165,6 +173,7 @@ public class Trade {
                 List<String> player1Items = new ArrayList<>();
                 player1.getTradeGui().getItems(false).forEach(itemStack -> {
                     if (itemStack == null) return;
+                    checkItem(player1.getPlayer(), itemStack);
                     Scheduler.get().runAt(player2.getPlayer().getLocation(), task -> {
                         ContainerUtils.INSTANCE.addOrDrop(player2.getPlayer().getInventory(), List.of(itemStack), player2.getPlayer().getLocation());
                     });
@@ -180,6 +189,7 @@ public class Trade {
                 List<String> player2Items = new ArrayList<>();
                 player2.getTradeGui().getItems(false).forEach(itemStack -> {
                     if (itemStack == null) return;
+                    checkItem(player2.getPlayer(), itemStack);
                     Scheduler.get().runAt(player1.getPlayer().getLocation(), task -> {
                         ContainerUtils.INSTANCE.addOrDrop(player1.getPlayer().getInventory(), List.of(itemStack), player1.getPlayer().getLocation());
                     });
@@ -197,25 +207,98 @@ public class Trade {
                                 player1.getPlayer().getName(), player1Currencies.isEmpty() ? "---" : String.join(", ", player1Currencies), player1Items.isEmpty() ? "---" : String.join(", ", player1Items), player2.getPlayer().getName(), player2Currencies.isEmpty() ? "---" : String.join(", ", player2Currencies), player2Items.isEmpty() ? "---" : String.join(", ", player2Items)));
             });
         });
+    });
+
+    public static NamespacedKey setKey = new NamespacedKey("itemskinskymine", "set_id");
+    public static NamespacedKey tierKey = new NamespacedKey("itemskinskymine", "set_tier");
+    public static NamespacedKey typeKey = new NamespacedKey("itemskinskymine", "set_item_type");
+
+
+
+public long getPrepTime() {
+    return prepTime;
+}
+
+public TradePlayer getPlayer1() {
+    return player1;
+}
+
+public TradePlayer getPlayer2() {
+    return player2;
+}
+
+public Player getOtherPlayer(Player player) {
+    return player1.getPlayer().equals(player) ? player2.getPlayer() : player1.getPlayer();
+}
+
+public boolean isEnded() {
+    return ended;
+}
+
+private void checkItem(Player player, ItemStack item) {
+    if (item == null || item.getItemMeta() == null) {
+        return;
     }
 
-    public long getPrepTime() {
-        return prepTime;
+    PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
+
+    if (!pdc.has(setKey, PersistentDataType.STRING)) {
+        return;
     }
 
-    public TradePlayer getPlayer1() {
-        return player1;
+    String setId = pdc.get(Trade.setKey, PersistentDataType.STRING);
+    String itemType = ItemType.fromItemStack(item).toString().toLowerCase();
+    Integer tier = pdc.get(Trade.tierKey, PersistentDataType.INTEGER);
+
+    if (tier == null) {
+        tier = 1; // fallback
     }
 
-    public TradePlayer getPlayer2() {
-        return player2;
-    }
+    String permission = "dl.itemskin." + setId + "." + itemType + "." + tier;
 
-    public Player getOtherPlayer(Player player) {
-        return player1.getPlayer().equals(player) ? player2.getPlayer() : player1.getPlayer();
-    }
-
-    public boolean isEnded() {
-        return ended;
+    if (!player.hasPermission(permission)) {
+        removeSetDataFromItem(item);
+        player.sendMessage("§cNon hai il permesso per usare questo item skin!");
     }
 }
+
+public static ItemStack removeSetDataFromItem(ItemStack item) {
+    if (item == null || item.getType() == Material.AIR) return item;
+
+    ItemMeta meta = item.getItemMeta();
+    if (meta == null) return item;
+
+    // Rimuove dati persistenti
+    PersistentDataContainer container = meta.getPersistentDataContainer();
+    container.remove(Trade.setKey);
+    container.remove(typeKey);
+    container.remove(Trade.tierKey);
+
+    // Ripristina il nome predefinito e rimuove custom model
+    meta.setDisplayName(null);
+    meta.setCustomModelData(null);
+
+    // Se è un'armatura, rimuove anche il trim
+    if (isArmor(item) && meta instanceof ArmorMeta armorMeta) {
+        armorMeta.setTrim(null);
+        armorMeta.removeItemFlags(ItemFlag.HIDE_ARMOR_TRIM);
+        meta = armorMeta;
+    }
+
+    item.setItemMeta(meta);
+    return item;
+
+}
+
+    public static boolean isArmor(ItemStack item) {
+        if (item == null || item.getType() == Material.AIR) return false;
+
+        Material type = item.getType();
+        return type.name().endsWith("_HELMET") ||
+                type.name().endsWith("_CHESTPLATE") ||
+                type.name().endsWith("_LEGGINGS") ||
+                type.name().endsWith("_BOOTS");
+    }
+
+}
+
