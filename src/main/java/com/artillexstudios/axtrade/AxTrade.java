@@ -21,13 +21,15 @@ import com.artillexstudios.axtrade.safety.SafetyManager;
 import com.artillexstudios.axtrade.trade.TradeTicker;
 import com.artillexstudios.axtrade.utils.NumberUtils;
 import com.artillexstudios.axtrade.utils.UpdateNotifier;
+import com.sun.tools.javac.Main;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 
-public final class AxTrade extends AxPlugin {
+public final class AxTrade extends AxPlugin{
     public static Config CONFIG;
     public static Config LANG;
     public static Config GUIS;
@@ -42,14 +44,14 @@ public final class AxTrade extends AxPlugin {
     public static ThreadedQueue<Runnable> getThreadedQueue() {
         return threadedQueue;
     }
-
+    public  static  AxTrade plugin;
     public static AxPlugin getInstance() {
         return instance;
     }
 
     public void enable() {
         instance = this;
-
+plugin = this;
         int pluginId = 21500;
         new Metrics(this, pluginId);
 

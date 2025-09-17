@@ -203,22 +203,18 @@ public class Trade {
                 HistoryUtils.writeToHistory(
                         String.format("%s: [Currencies: %s] [Items: %s] | %s: [Currencies: %s] [Items: %s]",
                                 player1.getPlayer().getName(), player1Currencies.isEmpty() ? "---" : String.join(", ", player1Currencies), player1Items.isEmpty() ? "---" : String.join(", ", player1Items), player2.getPlayer().getName(), player2Currencies.isEmpty() ? "---" : String.join(", ", player2Currencies), player2Items.isEmpty() ? "---" : String.join(", ", player2Items)));
+
             });
+
         });
 
-        for (ItemStack item : player1.getPlayer().getInventory()){
-            checkItem(player1.getPlayer(), item);
-        }
-
-        for (ItemStack item : player2.getPlayer().getInventory()){
-            checkItem(player2.getPlayer(), item);
-        }
 
     };
 
     public static NamespacedKey setKey = new NamespacedKey("itemskinskymine", "set_id");
     public static NamespacedKey tierKey = new NamespacedKey("itemskinskymine", "set_tier");
     public static NamespacedKey typeKey = new NamespacedKey("itemskinskymine", "set_item_type");
+    public static NamespacedKey voucherIdentifier = NamespacedKey.minecraft("voucher_set_id");
 
 
 
@@ -242,7 +238,7 @@ public boolean isEnded() {
     return ended;
 }
 
-private void checkItem(Player player, ItemStack item) {
+public static void checkItem(Player player, ItemStack item) {
     if (item == null || item.getItemMeta() == null) {
         return;
     }
@@ -250,6 +246,10 @@ private void checkItem(Player player, ItemStack item) {
     PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
 
     if (!pdc.has(setKey, PersistentDataType.STRING)) {
+        return;
+    }
+
+    if (pdc.has(voucherIdentifier, PersistentDataType.STRING)){
         return;
     }
 
