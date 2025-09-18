@@ -11,6 +11,7 @@ import com.artillexstudios.axtrade.utils.NumberUtils;
 import com.artillexstudios.axtrade.utils.SoundUtils;
 import com.artillexstudios.axtrade.utils.TaxUtils;
 import com.artillexstudios.axtrade.utils.Utils;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -265,7 +266,7 @@ public static void checkItem(Player player, ItemStack item) {
 
     if (!player.hasPermission(permission)) {
         removeSetDataFromItem(item);
-        player.sendMessage("§cNon hai il permesso per usare questo item skin!");
+        player.sendMessage(ChatColor.of("#FCFCFC") + "✨ " + ChatColor.of("#f9a2ee") + "sᴋɪɴ: " + "§7You don't own this skin.");
     }
 }
 
