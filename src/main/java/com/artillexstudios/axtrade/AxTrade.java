@@ -38,7 +38,6 @@ public final class AxTrade extends AxPlugin{
     public static MessageUtils MESSAGEUTILS;
     private static AxPlugin instance;
     private static ThreadedQueue<Runnable> threadedQueue;
-    public static BukkitAudiences BUKKITAUDIENCES;
     private static AxMetrics metrics;
 
     public static ThreadedQueue<Runnable> getThreadedQueue() {
@@ -52,8 +51,7 @@ public final class AxTrade extends AxPlugin{
     public void enable() {
         instance = this;
 plugin = this;
-        int pluginId = 21500;
-        new Metrics(this, pluginId);
+        new Metrics(this, 21500);
 
         CONFIG = new Config(new File(getDataFolder(), "config.yml"), getResource("config.yml"), GeneralSettings.builder().setUseDefaults(false).build(), LoaderSettings.builder().setAutoUpdate(true).build(), DumperSettings.DEFAULT, UpdaterSettings.builder().setKeepAll(true).setVersioning(new BasicVersioning("version")).build());
         GUIS = new Config(new File(getDataFolder(), "guis.yml"), getResource("guis.yml"), GeneralSettings.builder().setUseDefaults(false).build(), LoaderSettings.builder().setAutoUpdate(true).build(), DumperSettings.DEFAULT, UpdaterSettings.builder().setKeepAll(true).setVersioning(new BasicVersioning("version")).build());
@@ -66,8 +64,6 @@ plugin = this;
         MESSAGEUTILS = new MessageUtils(LANG.getBackingDocument(), "prefix", CONFIG.getBackingDocument());
 
         threadedQueue = new ThreadedQueue<>("AxTrade-Datastore-thread");
-
-        BUKKITAUDIENCES = BukkitAudiences.create(this);
 
         getServer().getPluginManager().registerEvents(new EntityInteractListener(), this);
         getServer().getPluginManager().registerEvents(new TradeListeners(), this);
@@ -97,5 +93,6 @@ plugin = this;
         FeatureFlags.USE_LEGACY_HEX_FORMATTER.set(true);
         FeatureFlags.PLACEHOLDER_API_HOOK.set(true);
         FeatureFlags.PLACEHOLDER_API_IDENTIFIER.set("axtrade");
+        FeatureFlags.ENABLE_PACKET_LISTENERS.set(true);
     }
 }
