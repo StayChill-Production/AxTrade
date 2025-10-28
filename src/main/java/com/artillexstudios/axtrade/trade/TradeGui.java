@@ -49,6 +49,7 @@ public class TradeGui extends GuiFrame {
     protected final StorageGui gui;
     protected final List<Integer> slots = getSlots("own-slots");
     protected final List<Integer> otherSlots = getSlots("partner-slots");
+    private String currentTitle = "";
     private boolean inSign = false;
 
     public TradeGui(@NotNull Trade trade, @NotNull TradePlayer player) {
@@ -83,7 +84,7 @@ public class TradeGui extends GuiFrame {
                 confirmCooldown.addCooldown(player.getPlayer(), 50L);
                 player.cancel();
                 trade.update();
-            }, Map.of(), player.getConfirmed());
+            }, Map.of(), CONFIG.getBoolean("static-accept-item-amount", true) ? 1 : player.getConfirmed());
         } else {
             super.createItem("own.confirm-item.slot", "own.confirm-item.accept", event -> {
                 event.setCancelled(true);
@@ -99,7 +100,7 @@ public class TradeGui extends GuiFrame {
             }, Map.of(
                     "%own-name%", player.getPlayer().getName(),
                     "%partner-name%", player.getOtherPlayer().getPlayer().getName()
-            ), player.getOtherPlayer().getConfirmed());
+            ), CONFIG.getBoolean("static-accept-item-amount", true) ? 1 : player.getOtherPlayer().getConfirmed());
         } else {
             super.createItem("partner.confirm-item.slot", "partner.confirm-item.accept", event -> {
                 event.setCancelled(true);
@@ -311,14 +312,14 @@ public class TradeGui extends GuiFrame {
         BaseGui shulkerGui = Gui.storage().rows(3).title(StringUtils.format(Utils.getFormattedItemName(event.getCurrentItem()))).disableAllInteractions().create();
         shulkerGui.getInventory().setContents(ShulkerUtils.getShulkerContents(event.getCurrentItem(), false));
         shulkerGui.setCloseGuiAction(e -> {
-            Scheduler.get().executeAt(player.getPlayer().getLocation(), () -> {
+            Scheduler.get().runLaterAt(player.getPlayer().getLocation(), () -> {
                 if (trade.isEnded()) return;
                 trade.prepTime = System.currentTimeMillis();
                 gui.open(player.getPlayer());
                 inSign = false;
                 trade.update();
                 updateTitle();
-            });
+            }, 1);
         });
         shulkerGui.open(player.getPlayer());
     }
@@ -349,16 +350,20 @@ public class TradeGui extends GuiFrame {
     }
 
     public void updateTitle() {
-        Component title = StringUtils.format(
-                GUIS.getString("title")
-                        .replace("%player%", player.getOtherPlayer().getPlayer().getName())
-                        .replace("%own-status%", player.hasConfirmed() ? LANG.getString("placeholders.ready") : LANG.getString("placeholders.waiting"))
-                        .replace("%partner-status%", player.getOtherPlayer().hasConfirmed() ? LANG.getString("placeholders.ready") : LANG.getString("placeholders.waiting"))
-        );
+        String newTitle = GUIS.getString("title")
+                .replace("%player%", player.getOtherPlayer().getPlayer().getName())
+                .replace("%own-status%", player.hasConfirmed() ? LANG.getString("placeholders.ready") : LANG.getString("placeholders.waiting"))
+                .replace("%partner-status%", player.getOtherPlayer().hasConfirmed() ? LANG.getString("placeholders.ready") : LANG.getString("placeholders.waiting"));
 
-        final Inventory topInv = player.getPlayer().getOpenInventory().getTopInventory();
-        if (topInv.equals(gui.getInventory())) {
-            NMSHandlers.getNmsHandler().setTitle(player.getPlayer().getOpenInventory().getTopInventory(), title);
-        }
+        // don't update title if it didn't change
+        if (currentTitle.equals(newTitle)) return;
+        this.currentTitle = newTitle;
+
+        Scheduler.get().runLater(task -> {
+            Inventory topInv = player.getPlayer().getOpenInventory().getTopInventory();
+            if (topInv.equals(gui.getInventory())) {
+                NMSHandlers.getNmsHandler().setTitle(player.getPlayer().getOpenInventory().getTopInventory(), StringUtils.format(newTitle));
+            }
+        }, 1);
     }
 }
