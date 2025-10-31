@@ -85,14 +85,14 @@ public class Requests {
 
         Request request = Requests.getRequest(sender, receiver);
         if (request != null) {
-            if (!request.isActive() || System.currentTimeMillis() - request.getTime() < CONFIG.getInt("trade-request-expire-seconds", 60) * 1_000L) {
-                MESSAGEUTILS.sendLang(sender, "request.already-sent", replacements);
-                return;
-            }
             if (!request.getSender().equals(sender)) {
                 Trades.addTrade(sender, receiver);
                 requests.remove(request);
                 request.deactivate();
+                return;
+            }
+            if (!request.isActive() || System.currentTimeMillis() - request.getTime() < CONFIG.getInt("trade-request-expire-seconds", 60) * 1_000L) {
+                MESSAGEUTILS.sendLang(sender, "request.already-sent", replacements);
                 return;
             }
         }
