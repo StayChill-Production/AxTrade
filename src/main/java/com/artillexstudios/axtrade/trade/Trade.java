@@ -13,9 +13,11 @@ import com.artillexstudios.axtrade.utils.TaxUtils;
 import com.artillexstudios.axtrade.utils.Utils;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ArmorMeta;
@@ -24,6 +26,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -73,16 +76,12 @@ public class Trade {
         end();
         player1.getTradeGui().getItems(false).forEach(itemStack -> {
             if (itemStack == null) return;
-            Scheduler.get().runAt(player1.getPlayer().getLocation(), task -> {
-                ContainerUtils.INSTANCE.addOrDrop(player1.getPlayer().getInventory(), List.of(itemStack), player1.getPlayer().getLocation());
-            });
+            addOrDrop(player1.getPlayer().getInventory(), List.of(itemStack), player1.getPlayer().getLocation());
         });
         if (player2.getTradeGui() != null) {
             player2.getTradeGui().getItems(false).forEach(itemStack -> {
                 if (itemStack == null) return;
-                Scheduler.get().runAt(player2.getPlayer().getLocation(), task -> {
-                    ContainerUtils.INSTANCE.addOrDrop(player2.getPlayer().getInventory(), List.of(itemStack), player2.getPlayer().getLocation());
-                });
+                addOrDrop(player2.getPlayer().getInventory(), List.of(itemStack), player2.getPlayer().getLocation());
             });
         }
         HistoryUtils.writeToHistory(String.format("Aborted: %s - %s", player1.getPlayer().getName(), player2.getPlayer().getName()));
@@ -180,9 +179,7 @@ public class Trade {
                 List<String> player1Items = new ArrayList<>();
                 player1.getTradeGui().getItems(false).forEach(itemStack -> {
                     if (itemStack == null) return;
-                    Scheduler.get().runAt(player2.getPlayer().getLocation(), task -> {
-                        ContainerUtils.INSTANCE.addOrDrop(player2.getPlayer().getInventory(), List.of(itemStack), player2.getPlayer().getLocation());
-                    });
+                    addOrDrop(player2.getPlayer().getInventory(), List.of(itemStack), player2.getPlayer().getLocation());
                     final String itemName = Utils.getFormattedItemName(itemStack);
                     int itemAm = itemStack.getAmount();
                     player1Items.add(itemAm + "x " + itemName);
@@ -195,9 +192,7 @@ public class Trade {
                 List<String> player2Items = new ArrayList<>();
                 player2.getTradeGui().getItems(false).forEach(itemStack -> {
                     if (itemStack == null) return;
-                    Scheduler.get().runAt(player1.getPlayer().getLocation(), task -> {
-                        ContainerUtils.INSTANCE.addOrDrop(player1.getPlayer().getInventory(), List.of(itemStack), player1.getPlayer().getLocation());
-                    });
+                    addOrDrop(player1.getPlayer().getInventory(), List.of(itemStack), player1.getPlayer().getLocation());
                     final String itemName = Utils.getFormattedItemName(itemStack);
                     int itemAm = itemStack.getAmount();
                     player2Items.add(itemAm + "x " + itemName);
@@ -243,6 +238,16 @@ public Player getOtherPlayer(Player player) {
 
 public boolean isEnded() {
     return ended;
+}
+
+private void addOrDrop(Inventory inventory, List<ItemStack> items, Location location) {
+    Location copy = location.clone();
+    Scheduler.get().executeAt(copy, () -> {
+        for (ItemStack key : items) {
+            HashMap<Integer, ItemStack> remaining = inventory.addItem(key);
+            remaining.forEach((k, v) -> copy.getWorld().dropItem(copy, v));
+        }
+    });
 }
 
 public static void checkItem(Player player, ItemStack item) {
