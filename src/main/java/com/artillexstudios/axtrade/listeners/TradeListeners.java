@@ -7,6 +7,7 @@ import com.artillexstudios.axtrade.trade.Trades;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
@@ -54,7 +55,7 @@ public class TradeListeners implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onDrop(@NotNull PlayerDropItemEvent event) {
         cancelIfTrading(event.getPlayer(), event);
     }
