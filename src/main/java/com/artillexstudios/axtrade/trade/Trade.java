@@ -1,7 +1,7 @@
 package com.artillexstudios.axtrade.trade;
 
 import com.artillexstudios.axapi.scheduler.Scheduler;
-import com.artillexstudios.axapi.utils.ContainerUtils;
+import com.artillexstudios.axapi.utils.PaperUtils;
 import com.artillexstudios.axtrade.api.events.AxTradeAbortEvent;
 import com.artillexstudios.axtrade.api.events.AxTradeCompleteEvent;
 import com.artillexstudios.axtrade.currency.CurrencyProcessor;
@@ -253,13 +253,22 @@ public boolean isEnded() {
 }
 
 private void addOrDrop(Inventory inventory, List<ItemStack> items, Location location) {
+    boolean folia = PaperUtils.isFolia();
+    boolean sync = folia ? Scheduler.get().isOwnedByCurrentRegion(location) : Bukkit.isPrimaryThread();
+
     Location copy = location.clone();
-    Scheduler.get().runAt(copy, () -> {
+    Runnable runnable = () -> {
         for (ItemStack key : items) {
             HashMap<Integer, ItemStack> remaining = inventory.addItem(key);
             remaining.forEach((k, v) -> copy.getWorld().dropItem(copy, v));
         }
-    });
+    };
+
+    if (sync) {
+        runnable.run();
+    } else {
+        Scheduler.get().runAt(copy, runnable);
+    }
 }
 
 public static void checkItem(Player player, ItemStack item) {
