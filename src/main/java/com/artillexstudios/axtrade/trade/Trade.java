@@ -56,10 +56,24 @@ public class Trade {
 
     public void end() {
         ended = true;
-        player1.getPlayer().closeInventory();
-        player1.getPlayer().updateInventory();
-        player2.getPlayer().closeInventory();
-        player2.getPlayer().updateInventory();
+
+        {
+            Player player = player1.getPlayer();
+            execute(player, () -> {
+                closeAndUpdate(player1.getPlayer());
+            });
+        }
+        {
+            Player player = player2.getPlayer();
+            execute(player, () -> {
+                closeAndUpdate(player2.getPlayer());
+            });
+        }
+    }
+
+    private void closeAndUpdate(Player player) {
+        player.closeInventory();
+        player.updateInventory();
     }
 
     public void abort() {
@@ -270,6 +284,16 @@ private void addOrDrop(Inventory inventory, List<ItemStack> items, Location loca
         Scheduler.get().runAt(copy, runnable);
     }
 }
+
+    private void execute(Player player, Runnable runnable) {
+        boolean folia = PaperUtils.isFolia();
+        boolean sync = folia ? Scheduler.get().isOwnedByCurrentRegion(player.getLocation()) : Bukkit.isPrimaryThread();
+        if (sync) {
+            runnable.run();
+        } else {
+            Scheduler.get().run(player, task -> runnable.run(), () -> {});
+        }
+    }
 
 public static void checkItem(Player player, ItemStack item) {
     if (item == null || item.getItemMeta() == null) {
