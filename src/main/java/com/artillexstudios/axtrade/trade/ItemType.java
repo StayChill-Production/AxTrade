@@ -24,15 +24,6 @@ public enum ItemType {
 
     ),
 
-    // Pale
-    SHOVEL(
-            Material.NETHERITE_SHOVEL
-    ),
-
-    // Zappe
-    HOE(
-            Material.NETHERITE_HOE
-    ),
 
     // Archi
     BOW(

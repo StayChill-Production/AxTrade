@@ -302,11 +302,11 @@ public static void checkItem(Player player, ItemStack item) {
 
     PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
 
-    if (!pdc.has(setKey, PersistentDataType.STRING)) {
+    if (pdc.has(voucherIdentifier, PersistentDataType.STRING)){
         return;
     }
 
-    if (pdc.has(voucherIdentifier, PersistentDataType.STRING)){
+    if (!pdc.has(setKey, PersistentDataType.STRING)) {
         return;
     }
 
