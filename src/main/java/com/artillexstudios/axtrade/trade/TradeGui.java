@@ -72,8 +72,11 @@ public class TradeGui extends GuiFrame {
         if (trade.isEnded()) return;
 
         update();
-        gui.open(player.getPlayer());
-        updateTitle();
+        Runnable runnable = () -> {
+            gui.open(player.getPlayer());
+            updateTitle();
+        };
+        Scheduler.get().execute(player.getPlayer(), runnable, runnable, 0);
         opened = true;
     }
 
@@ -380,11 +383,15 @@ public class TradeGui extends GuiFrame {
         if (currentTitle.equals(newTitle)) return;
         this.currentTitle = newTitle;
 
-        Scheduler.get().runLater(task -> {
+        Runnable runnable = () -> {
             Inventory topInv = player.getPlayer().getOpenInventory().getTopInventory();
             if (topInv.equals(gui.getInventory())) {
                 NMSHandlers.getNmsHandler().setTitle(player.getPlayer().getOpenInventory().getTopInventory(), StringUtils.format(newTitle));
             }
-        }, 1);
+        };
+
+        Scheduler.get().runLater(player.getPlayer(), task -> {
+            runnable.run();
+        }, runnable, 1);
     }
 }
