@@ -159,6 +159,10 @@ public class TradeGui extends GuiFrame {
     }
 
     private void handleClickTop(InventoryClickEvent event) {
+        if (trade.isEnded()) {
+            event.setCancelled(true);
+            return;
+        }
         if (confirmCooldown.hasCooldown(player.getPlayer())) {
             event.setCancelled(true);
             return;
@@ -192,6 +196,10 @@ public class TradeGui extends GuiFrame {
     }
 
     private void handleClickBottom(InventoryClickEvent event) {
+        if (trade.isEnded()) {
+            event.setCancelled(true);
+            return;
+        }
         ItemStack it = getItem(event);
 
         if (BlacklistUtils.isBlacklisted(it)) {
@@ -220,6 +228,10 @@ public class TradeGui extends GuiFrame {
     }
 
     private void handleDrag(InventoryDragEvent event) {
+        if (trade.isEnded()) {
+            event.setCancelled(true);
+            return;
+        }
         boolean ownInv = true;
         for (int s : event.getRawSlots()) {
             if (s > 53) continue;

@@ -13,6 +13,7 @@ import com.artillexstudios.axapi.utils.MessageUtils;
 import com.artillexstudios.axapi.utils.StringUtils;
 import com.artillexstudios.axapi.utils.featureflags.FeatureFlags;
 import com.artillexstudios.axapi.utils.file.FileUtils;
+import com.artillexstudios.axapi.utils.logging.LoggerNameFormat;
 import com.artillexstudios.axtrade.commands.CommandManager;
 import com.artillexstudios.axtrade.hooks.HookManager;
 import com.artillexstudios.axtrade.lang.LanguageManager;
@@ -112,5 +113,6 @@ public final class AxTrade extends AxPlugin{
         FeatureFlags.PLACEHOLDER_API_HOOK.set(true);
         FeatureFlags.PLACEHOLDER_API_IDENTIFIER.set("axtrade");
         FeatureFlags.ENABLE_PACKET_LISTENERS.set(true);
+        FeatureFlags.LOGGER_NAME_FORMAT.set(LoggerNameFormat.NAMEABLE);
     }
 }
