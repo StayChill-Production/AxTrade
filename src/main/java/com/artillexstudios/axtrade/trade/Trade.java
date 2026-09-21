@@ -316,64 +316,68 @@ private void addOrDrop(Inventory inventory, List<ItemStack> items, Location loca
         }
     }
 
-public static void checkItem(Player player, ItemStack item) {
-    if (item == null || item.getItemMeta() == null) {
-        return;
+    public static void checkItem(Player player, ItemStack item) {
+        if (item == null || item.getItemMeta() == null) {
+            return;
+        }
+
+        PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
+
+        if (pdc.has(voucherIdentifier, PersistentDataType.STRING)){
+            return;
+        }
+
+        if (!pdc.has(setKey, PersistentDataType.STRING)) {
+            return;
+        }
+
+        ItemType type = ItemType.fromItemStack(item);
+        if (type == null) {
+            return;
+        }
+
+        String setId = pdc.get(Trade.setKey, PersistentDataType.STRING);
+        String itemType = type.name().toLowerCase();
+        Integer tier = pdc.get(Trade.tierKey, PersistentDataType.INTEGER);
+
+        if (tier == null) {
+            tier = 1; // fallback
+        }
+
+        String permission = "dl.itemskin." + setId + "." + itemType + "." + tier;
+
+        if (!player.hasPermission(permission)) {
+            removeSetDataFromItem(item);
+            player.sendMessage(ChatColor.of("#FCFCFC") + "✨ " + ChatColor.of("#f9a2ee") + "sᴋɪɴ: " + "§7You don't own this skin.");
+        }
     }
 
-    PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
+    public static ItemStack removeSetDataFromItem(ItemStack item) {
+        if (item == null || item.getType() == Material.AIR) return item;
 
-    if (pdc.has(voucherIdentifier, PersistentDataType.STRING)){
-        return;
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return item;
+
+        // Rimuove dati persistenti
+        PersistentDataContainer container = meta.getPersistentDataContainer();
+        container.remove(Trade.setKey);
+        container.remove(typeKey);
+        container.remove(Trade.tierKey);
+
+        // Ripristina il nome predefinito e rimuove custom model
+        meta.setDisplayName(null);
+        meta.setCustomModelData(null);
+
+        // Se è un'armatura, rimuove anche il trim
+        if (isArmor(item) && meta instanceof ArmorMeta armorMeta) {
+            armorMeta.setTrim(null);
+            armorMeta.removeItemFlags(ItemFlag.HIDE_ARMOR_TRIM);
+            meta = armorMeta;
+        }
+
+        item.setItemMeta(meta);
+        return item;
     }
-
-    if (!pdc.has(setKey, PersistentDataType.STRING)) {
-        return;
-    }
-
-    String setId = pdc.get(Trade.setKey, PersistentDataType.STRING);
-    String itemType = ItemType.fromItemStack(item).toString().toLowerCase();
-    Integer tier = pdc.get(Trade.tierKey, PersistentDataType.INTEGER);
-
-    if (tier == null) {
-        tier = 1; // fallback
-    }
-
-    String permission = "dl.itemskin." + setId + "." + itemType + "." + tier;
-
-    if (!player.hasPermission(permission)) {
-        removeSetDataFromItem(item);
-        player.sendMessage(ChatColor.of("#FCFCFC") + "✨ " + ChatColor.of("#f9a2ee") + "sᴋɪɴ: " + "§7You don't own this skin.");
-    }
-}
-
-public static ItemStack removeSetDataFromItem(ItemStack item) {
-    if (item == null || item.getType() == Material.AIR) return item;
-
-    ItemMeta meta = item.getItemMeta();
-    if (meta == null) return item;
-
-    // Rimuove dati persistenti
-    PersistentDataContainer container = meta.getPersistentDataContainer();
-    container.remove(Trade.setKey);
-    container.remove(typeKey);
-    container.remove(Trade.tierKey);
-
-    // Ripristina il nome predefinito e rimuove custom model
-    meta.setDisplayName(null);
-    meta.setCustomModelData(null);
-
-    // Se è un'armatura, rimuove anche il trim
-    if (isArmor(item) && meta instanceof ArmorMeta armorMeta) {
-        armorMeta.setTrim(null);
-        armorMeta.removeItemFlags(ItemFlag.HIDE_ARMOR_TRIM);
-        meta = armorMeta;
-    }
-
-    item.setItemMeta(meta);
-    return item;
-
-}
 
     public static boolean isArmor(ItemStack item) {
         if (item == null || item.getType() == Material.AIR) return false;
