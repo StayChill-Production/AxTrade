@@ -58,6 +58,10 @@ disallowed-gamemodes:
 blacklisted-worlds:
   - "example_world"
 
+# regions where trades will not work
+blacklisted-regions:
+  - "pvp_arena"
+
 # list of items that CAN'T be traded
 #
 # supported regex: (optional)

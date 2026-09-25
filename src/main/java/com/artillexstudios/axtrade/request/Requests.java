@@ -6,10 +6,17 @@ import com.artillexstudios.axtrade.api.events.AxTradeRequestEvent;
 import com.artillexstudios.axtrade.safety.SafetyManager;
 import com.artillexstudios.axtrade.trade.Trades;
 import com.artillexstudios.axtrade.utils.SoundUtils;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import com.sk89q.worldguard.protection.regions.RegionContainer;
+import com.sk89q.worldguard.protection.regions.RegionQuery;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -50,6 +57,14 @@ public class Requests {
         if (blacklisted.contains(sender.getWorld().getName()) || blacklisted.contains(receiver.getWorld().getName())) {
             MESSAGEUTILS.sendLang(sender, "request.blacklisted-world", replacements);
             return;
+        }
+
+        var blacklistedRegions = CONFIG.getStringList("blacklisted-regions");
+        if (!blacklistedRegions.isEmpty() && Bukkit.getPluginManager().isPluginEnabled("WorldGuard")) {
+            if (isInBlacklistedRegion(sender.getLocation(), blacklistedRegions) || isInBlacklistedRegion(receiver.getLocation(), blacklistedRegions)) {
+                MESSAGEUTILS.sendLang(sender, "request.blacklisted-region", replacements);
+                return;
+            }
         }
 
         if (sender.isDead() || receiver.isDead()) {
@@ -147,6 +162,21 @@ public class Requests {
 
         SoundUtils.playSound(sender, "requested");
         SoundUtils.playSound(receiver, "requested");
+    }
+
+
+
+    private static boolean isInBlacklistedRegion(Location loc, List<String> blacklistedRegions) {
+        RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
+        RegionQuery query = container.createQuery();
+        ApplicableRegionSet set = query.getApplicableRegions(BukkitAdapter.adapt(loc));
+
+        for (ProtectedRegion region : set) {
+            if (blacklistedRegions.contains(region.getId())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Nullable

@@ -74,6 +74,7 @@ request:
   same-ip: "&#CCFFEEYou can't trade with an account that has the same ip as you!"
   below-required-amount: "&#CCFFEEYou are required to trade at least &f%amount% %currency%&#CCFFEE!"
   blacklisted-world: "&#CCFFEETrades are disabled in this world!"
+  blacklisted-region: "&#CCFFEETrades are disabled in this region!"
   expired: "&#CCFFEEYour trade request to &#00FFDD%player% &#CCFFEEhas expired!"
   disabled-trading: "&#CCFFEEYou have disabled trades! Use &#00FFDD/trade toggle &#CCFFEEto enable."
 
